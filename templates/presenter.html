@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presenter Controls</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .timer-green { color: #10B981; }
+        .timer-yellow { color: #F59E0B; }
+        .timer-red { color: #EF4444; }
+        .btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 1.25rem;
+        }
+        .btn-success {
+            background-color: #10B981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .btn-danger {
+            background-color: #EF4444;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .btn-warning {
+            background-color: #F59E0B;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .slide-controls {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="container mx-auto max-w-lg">
+        <header class="bg-blue-600 text-white p-4 rounded-lg mb-6">
+            <h1 class="text-2xl font-bold">Presenter Controls</h1>
+            <div class="mt-2">
+                <span id="connection-status" class="px-3 py-1 bg-gray-800 rounded-full text-sm">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Presenter Info Panel -->
+        <div class="panel mb-6">
+            <h2 class="text-xl font-bold mb-4" id="presenter-name">Loading...</h2>
+            <p class="text-gray-600" id="presentation-topic">Loading...</p>
+        </div>
+
+        <!-- Timer Panel -->
+        <div class="panel mb-6">
+            <h2 class="text-lg font-bold mb-2">Time Remaining</h2>
+            <div class="timer-display timer-green text-center mb-4" id="timer-display">10:00</div>
+            
+            <button id="request-more-time" class="btn-warning w-full">Request More Time</button>
+        </div>
+
+        <!-- Slide Controls -->
+        <div class="panel">
+            <h2 class="text-lg font-bold mb-4">Slide Controls</h2>
+            
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-lg font-semibold" id="slide-indicator">Slide: 1/30</span>
+            </div>
+            
+            <div class="flex justify-between space-x-4">
+                <button id="prev-slide" class="btn-primary flex-1">◀ Previous</button>
+                <button id="next-slide" class="btn-primary flex-1">Next ▶</button>
+            </div>
+            
+            <div class="mt-4">
+                <div class="flex space-x-2">
+                    <input type="number" id="go-to-slide" placeholder="Slide #" class="border rounded p-2 flex-1">
+                    <button id="go-to-slide-btn" class="btn-primary whitespace-nowrap">Go to Slide</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements Panel -->
+        <div class="panel mt-6" id="announcement-panel" style="display: none;">
+            <h2 class="text-lg font-bold mb-2">Announcement</h2>
+            <div class="bg-yellow-100 border-yellow-400 border-l-4 p-4 rounded" id="announcement-text">
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let socket;
+        let state = {
+            timer_seconds: 600,
+            timer_running: false,
+            current_presenter: "Loading...",
+            current_topic: "Loading...",
+            announcement: "",
+            announcement_visible: false,
+            current_slide: 1,
+            total_slides: 30
+        };
+        
+        // Connect to WebSocket
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = function() {
+                document.getElementById('connection-status').textContent = 'Connected';
+                document.getElementById('connection-status').classList.remove('bg-gray-800', 'bg-red-600');
+                document.getElementById('connection-status').classList.add('bg-green-600');
+            };
+            
+            socket.onclose = function() {
+                document.getElementById('connection-status').textContent = 'Disconnected';
+                document.getElementById('connection-status').classList.remove('bg-gray-800', 'bg-green-600');
+                document.getElementById('connection-status').classList.add('bg-red-600');
+                
+                // Try to reconnect after 3 seconds
+                setTimeout(connect, 3000);
+            };
+            
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                updateState(data);
+            };
+        }
+        
+        // Update UI based on state
+        function updateState(newState) {
+            state = newState;
+            
+            // Update presenter info
+            document.getElementById('presenter-name').textContent = state.current_presenter;
+            document.getElementById('presentation-topic').textContent = state.current_topic;
+            
+            // Update timer display
+            const minutes = Math.floor(state.timer_seconds / 60);
+            const seconds = state.timer_seconds % 60;
+            const timerDisplay = document.getElementById('timer-display');
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Set timer color
+            timerDisplay.classList.remove('timer-green', 'timer-yellow', 'timer-red');
+            if (state.timer_seconds <= 30) {
+                timerDisplay.classList.add('timer-red');
+            } else if (state.timer_seconds <= 60) {
+                timerDisplay.classList.add('timer-yellow');
+            } else {
+                timerDisplay.classList.add('timer-green');
+            }
+            
+            // Update slide indicator
+            document.getElementById('slide-indicator').textContent = `Slide: ${state.current_slide}/${state.total_slides}`;
+            
+            // Update announcement
+            if (state.announcement_visible && state.announcement) {
+                document.getElementById('announcement-panel').style.display = 'block';
+                document.getElementById('announcement-text').textContent = state.announcement;
+            } else {
+                document.getElementById('announcement-panel').style.display = 'none';
+            }
+        }
+        
+        // Send a message to the server
+        function sendMessage(type, data) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: type,
+                    data: data
+                }));
+            }
+        }
+        
+        // Event listeners for slide controls
+        document.getElementById('prev-slide').addEventListener('click', function() {
+            sendMessage('slide_control', { command: 'previous_slide' });
+        });
+        
+        document.getElementById('next-slide').addEventListener('click', function() {
+            sendMessage('slide_control', { command: 'next_slide' });
+        });
+        
+        document.getElementById('go-to-slide-btn').addEventListener('click', function() {
+            const slideNumber = parseInt(document.getElementById('go-to-slide').value);
+            if (slideNumber && slideNumber > 0 && slideNumber <= state.total_slides) {
+                sendMessage('slide_control', { command: 'goto_slide', slide: slideNumber });
+            }
+        });
+        
+        // Request more time
+        document.getElementById('request-more-time').addEventListener('click', function() {
+            sendMessage('announcement', { message: `${state.current_presenter} has requested more time`, visible: true });
+            alert('Time extension request sent to moderator');
+        });
+        
+        // Connect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            connect();
+        });
+    </script>
+</body>
+</html>

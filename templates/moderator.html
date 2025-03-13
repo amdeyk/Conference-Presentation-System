@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Moderator Control</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+        }
+        .timer-green { color: #10B981; }
+        .timer-yellow { color: #F59E0B; }
+        .timer-red { color: #EF4444; }
+        .btn-primary {
+            background-color: #3B82F6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .btn-success {
+            background-color: #10B981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .btn-danger {
+            background-color: #EF4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .btn-warning {
+            background-color: #F59E0B;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="container mx-auto max-w-5xl">
+        <header class="bg-blue-600 text-white p-4 rounded-lg mb-6">
+            <h1 class="text-2xl font-bold">Conference Moderator Control Panel</h1>
+            <div class="mt-2">
+                <span id="connection-status" class="px-3 py-1 bg-gray-800 rounded-full text-sm">Connecting...</span>
+                <span id="system-status" class="px-3 py-1 bg-gray-800 rounded-full text-sm ml-2">System: Checking...</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Timer Control Panel -->
+            <div class="panel">
+                <h2 class="text-xl font-bold mb-4">Timer Control</h2>
+                <div class="timer-display timer-green text-center mb-6" id="timer-display">10:00</div>
+                
+                <div class="flex space-x-2 mb-4">
+                    <button id="start-timer" class="btn-success flex-1">Start</button>
+                    <button id="pause-timer" class="btn-warning flex-1">Pause</button>
+                    <button id="reset-timer" class="btn-danger flex-1">Reset</button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Set Timer (minutes)</label>
+                    <div class="flex space-x-2">
+                        <button class="btn-primary" data-time="5">5m</button>
+                        <button class="btn-primary" data-time="10">10m</button>
+                        <button class="btn-primary" data-time="15">15m</button>
+                        <button class="btn-primary" data-time="20">20m</button>
+                        <button class="btn-primary" data-time="30">30m</button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Custom Time</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="custom-minutes" placeholder="Minutes" class="border rounded p-2 w-24">
+                        <input type="number" id="custom-seconds" placeholder="Seconds" class="border rounded p-2 w-24">
+                        <button id="set-custom-time" class="btn-primary">Set</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Presenter Panel -->
+            <div class="panel">
+                <h2 class="text-xl font-bold mb-4">Presenter Information</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Presenter</label>
+                    <input type="text" id="presenter-name" class="border rounded p-2 w-full" placeholder="Presenter name">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Presentation Topic</label>
+                    <input type="text" id="presentation-topic" class="border rounded p-2 w-full" placeholder="Presentation topic">
+                </div>
+                
+                <button id="update-presenter" class="btn-primary w-full">Update Presenter Information</button>
+            </div>
+            
+            <!-- Announcement Panel -->
+            <div class="panel">
+                <h2 class="text-xl font-bold mb-4">Announcements</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                    <textarea id="announcement-text" class="border rounded p-2 w-full h-24" placeholder="Enter announcement message"></textarea>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button id="send-announcement" class="btn-primary flex-1">Send</button>
+                    <button id="clear-announcement" class="btn-danger flex-1">Clear</button>
+                </div>
+            </div>
+            
+            <!-- System Status Panel -->
+            <div class="panel">
+                <h2 class="text-xl font-bold mb-4">System Status</h2>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="font-semibold mb-2">Main Laptop</h3>
+                        <div id="main-status" class="bg-green-100 text-green-800 p-2 rounded">Online</div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold mb-2">Backup Laptop</h3>
+                        <div id="backup-status" class="bg-gray-100 text-gray-800 p-2 rounded">Unknown</div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold mb-2">Connected Clients</h3>
+                        <div id="clients-count" class="bg-blue-100 text-blue-800 p-2 rounded">0</div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold mb-2">System Health</h3>
+                        <div id="system-health" class="bg-green-100 text-green-800 p-2 rounded">Good</div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h3 class="font-semibold mb-2">Emergency Controls</h3>
+                    <div class="flex space-x-2">
+                        <button id="force-backup" class="btn-warning flex-1">Switch to Backup</button>
+                        <button id="force-main" class="btn-primary flex-1">Switch to Main</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let socket;
+        let state = {
+            timer_seconds: 600,
+            timer_running: false,
+            current_presenter: "No presenter",
+            current_topic: "Welcome to the Conference",
+            announcement: "",
+            device_status: {
+                main: "UNKNOWN",
+                backup: "UNKNOWN"
+            }
+        };
+        
+        // Connect to WebSocket
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = function() {
+                document.getElementById('connection-status').textContent = 'Connected';
+                document.getElementById('connection-status').classList.remove('bg-gray-800', 'bg-red-600');
+                document.getElementById('connection-status').classList.add('bg-green-600');
+            };
+            
+            socket.onclose = function() {
+                document.getElementById('connection-status').textContent = 'Disconnected';
+                document.getElementById('connection-status').classList.remove('bg-gray-800', 'bg-green-600');
+                document.getElementById('connection-status').classList.add('bg-red-600');
+                
+                // Try to reconnect after 3 seconds
+                setTimeout(connect, 3000);
+            };
+            
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                updateState(data);
+            };
+        }
+        
+        // Update UI based on state
+        function updateState(newState) {
+            state = newState;
+            
+            // Update timer display
+            const minutes = Math.floor(state.timer_seconds / 60);
+            const seconds = state.timer_seconds % 60;
+            const timerDisplay = document.getElementById('timer-display');
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Set timer color
+            timerDisplay.classList.remove('timer-green', 'timer-yellow', 'timer-red');
+            if (state.timer_seconds <= 30) {
+                timerDisplay.classList.add('timer-red');
+            } else if (state.timer_seconds <= 60) {
+                timerDisplay.classList.add('timer-yellow');
+            } else {
+                timerDisplay.classList.add('timer-green');
+            }
+            
+            // Update presenter fields
+            document.getElementById('presenter-name').value = state.current_presenter;
+            document.getElementById('presentation-topic').value = state.current_topic;
+            
+            // Update announcement field
+            document.getElementById('announcement-text').value = state.announcement;
+            
+            // Update status indicators
+            document.getElementById('main-status').textContent = state.device_status.main;
+            document.getElementById('main-status').className = 
+                state.device_status.main === 'ONLINE' 
+                    ? 'bg-green-100 text-green-800 p-2 rounded' 
+                    : 'bg-red-100 text-red-800 p-2 rounded';
+                    
+            document.getElementById('backup-status').textContent = state.device_status.backup;
+            document.getElementById('backup-status').className = 
+                state.device_status.backup === 'ONLINE' 
+                    ? 'bg-green-100 text-green-800 p-2 rounded' 
+                    : (state.device_status.backup === 'UNKNOWN'
+                        ? 'bg-gray-100 text-gray-800 p-2 rounded'
+                        : 'bg-red-100 text-red-800 p-2 rounded');
+            
+            document.getElementById('clients-count').textContent = state.connected_clients;
+            
+            // Update system health
+            const health = state.system_health;
+            let healthStatus = 'Good';
+            let healthClass = 'bg-green-100 text-green-800';
+            
+            if (health.cpu > 80 || health.memory > 80) {
+                healthStatus = 'Warning';
+                healthClass = 'bg-yellow-100 text-yellow-800';
+            }
+            if (health.cpu > 90 || health.memory > 90 || health.network !== 'OK') {
+                healthStatus = 'Critical';
+                healthClass = 'bg-red-100 text-red-800';
+            }
+            
+            document.getElementById('system-health').textContent = healthStatus;
+            document.getElementById('system-health').className = healthClass + ' p-2 rounded';
+            
+            // Update system status
+            document.getElementById('system-status').textContent = 
+                `System: ${state.device_status.main === 'ONLINE' ? 'Main' : 'Backup'}`;
+        }
+        
+        // Send a message to the server
+        function sendMessage(type, data) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: type,
+                    data: data
+                }));
+            }
+        }
+        
+        // Event listeners for timer control
+        document.getElementById('start-timer').addEventListener('click', function() {
+            sendMessage('timer_control', { running: true });
+        });
+        
+        document.getElementById('pause-timer').addEventListener('click', function() {
+            sendMessage('timer_control', { running: false });
+        });
+        
+        document.getElementById('reset-timer').addEventListener('click', function() {
+            sendMessage('timer_control', { seconds: 600, running: false });
+        });
+        
+        // Timer preset buttons
+        document.querySelectorAll('[data-time]').forEach(button => {
+            button.addEventListener('click', function() {
+                const minutes = parseInt(this.getAttribute('data-time'));
+                sendMessage('timer_control', { seconds: minutes * 60, running: false });
+            });
+        });
+        
+        // Custom timer
+        document.getElementById('set-custom-time').addEventListener('click', function() {
+            const minutes = parseInt(document.getElementById('custom-minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('custom-seconds').value) || 0;
+            const totalSeconds = (minutes * 60) + seconds;
+            
+            if (totalSeconds > 0) {
+                sendMessage('timer_control', { seconds: totalSeconds, running: false });
+            }
+        });
+        
+        // Presenter information
+        document.getElementById('update-presenter').addEventListener('click', function() {
+            const name = document.getElementById('presenter-name').value;
+            const topic = document.getElementById('presentation-topic').value;
+            
+            sendMessage('presenter_update', { name: name, topic: topic });
+        });
+        
+        // Announcements
+        document.getElementById('send-announcement').addEventListener('click', function() {
+            const message = document.getElementById('announcement-text').value;
+            
+            if (message.trim()) {
+                sendMessage('announcement', { message: message, visible: true });
+            }
+        });
+        
+        document.getElementById('clear-announcement').addEventListener('click', function() {
+            document.getElementById('announcement-text').value = '';
+            sendMessage('announcement', { message: '', visible: false });
+        });
+        
+        // Emergency controls
+        document.getElementById('force-backup').addEventListener('click', function() {
+            if (confirm('Are you sure you want to switch to the backup system?')) {
+                sendMessage('control', { command: 'switch_to_backup' });
+            }
+        });
+        
+        document.getElementById('force-main').addEventListener('click', function() {
+            if (confirm('Are you sure you want to switch back to the main system?')) {
+                sendMessage('control', { command: 'switch_to_main' });
+            }
+        });
+        
+        // Connect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            connect();
+        });
+    </script>
+</body>
+</html>

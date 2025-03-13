@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference View</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .timer-green { color: #10B981; }
+        .timer-yellow { color: #F59E0B; }
+        .timer-red { color: #EF4444; }
+        .screen-container {
+            aspect-ratio: 16/9;
+            background-color: #333;
+            position: relative;
+            overflow: hidden;
+        }
+        .screen-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .announcement-banner {
+            background-color: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="container mx-auto">
+        <header class="bg-blue-600 text-white p-4 rounded-lg mb-6">
+            <h1 class="text-2xl font-bold">Conference Live View</h1>
+            <div class="mt-2">
+                <span id="connection-status" class="px-3 py-1 bg-gray-800 rounded-full text-sm">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Announcement Banner (hidden by default) -->
+        <div class="announcement-banner" id="announcement-banner" style="display: none;">
+            <div class="flex items-center">
+                <svg class="h-6 w-6 text-yellow-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span id="announcement-text" class="font-semibold"></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Content (Presentation Screen) -->
+            <div class="lg:col-span-2">
+                <div class="screen-container rounded-lg mb-4">
+                    <div class="screen-placeholder">
+                        <div class="text-center">
+                            <div class="mb-2">WebRTC Screen Share</div>
+                            <div class="text-sm text-gray-400">Live presentation will appear here</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Slide Indicator -->
+                <div class="bg-gray-800 text-white p-3 rounded-lg text-center mb-6">
+                    <span id="slide-indicator">Slide: 1/30</span>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Presenter Info -->
+                <div class="panel">
+                    <h2 class="text-xl font-bold mb-2">Current Presenter</h2>
+                    <h3 class="text-2xl font-bold mb-2" id="presenter-name">Loading...</h3>
+                    <p class="text-lg text-gray-600" id="presentation-topic">Loading...</p>
+                </div>
+                
+                <!-- Timer -->
+                <div class="panel">
+                    <h2 class="text-xl font-bold mb-2">Time Remaining</h2>
+                    <div class="timer-display timer-green text-center" id="timer-display">10:00</div>
+                </div>
+                
+                <!-- Connection Status -->
+                <div class="panel">
+                    <h2 class="text-xl font-bold mb-4">Connection Status</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-semibold mb-1">Main System</h3>
+                            <div id="main-status" class="bg-green-100 text-green-800 p-2 rounded text-center">
+                                Online
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Backup System</h3>
+                            <div id="backup-status" class="bg-gray-100 text-gray-800 p-2 rounded text-center">
+                                Standby
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let socket;
+        let state = {
+            timer_seconds: 600,
+            timer_running: false,
+            current_presenter: "Loading...",
+            current_topic: "Loading...",
+            announcement: "",
+            announcement_visible: false,
+            current_slide: 1,
+            total_slides: 30,
+            device_status: {
+                main: "UNKNOWN",
+                backup: "UNKNOWN"
+            }
+        };
+        
+        // Connect to WebSocket
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = function() {
+                document.getElementById('connection-status').textContent = 'Connected';
+                document.getElementById('connection-status').classList.remove('bg-gray-800', 'bg-red-600');
+                document.getElementById('connection-status').classList.add('bg-green-600');
+            };
+            
+            socket.onclose = function() {
+                document.getElementById('connection-status').textContent = 'Disconnected';
+                document.getElementById('connection-status').classList.remove('bg-gray-800', 'bg-green-600');
+                document.getElementById('connection-status').classList.add('bg-red-600');
+                
+                // Try to reconnect after 3 seconds
+                setTimeout(connect, 3000);
+            };
+            
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                updateState(data);
+            };
+        }
+        
+        // Update UI based on state
+        function updateState(newState) {
+            state = newState;
+            
+            // Update presenter info
+            document.getElementById('presenter-name').textContent = state.current_presenter;
+            document.getElementById('presentation-topic').textContent = state.current_topic;
+            
+            // Update timer display
+            const minutes = Math.floor(state.timer_seconds / 60);
+            const seconds = state.timer_seconds % 60;
+            const timerDisplay = document.getElementById('timer-display');
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Set timer color
+            timerDisplay.classList.remove('timer-green', 'timer-yellow', 'timer-red');
+            if (state.timer_seconds <= 30) {
+                timerDisplay.classList.add('timer-red');
+            } else if (state.timer_seconds <= 60) {
+                timerDisplay.classList.add('timer-yellow');
+            } else {
+                timerDisplay.classList.add('timer-green');
+            }
+            
+            // Update slide indicator
+            document.getElementById('slide-indicator').textContent = `Slide: ${state.current_slide}/${state.total_slides}`;
+            
+            // Update announcement
+            if (state.announcement_visible && state.announcement) {
+                document.getElementById('announcement-banner').style.display = 'block';
+                document.getElementById('announcement-text').textContent = state.announcement;
+            } else {
+                document.getElementById('announcement-banner').style.display = 'none';
+            }
+            
+            // Update status indicators
+            document.getElementById('main-status').textContent = state.device_status.main;
+            document.getElementById('main-status').className = 
+                state.device_status.main === 'ONLINE' 
+                    ? 'bg-green-100 text-green-800 p-2 rounded text-center' 
+                    : 'bg-red-100 text-red-800 p-2 rounded text-center';
+                    
+            document.getElementById('backup-status').textContent = state.device_status.backup;
+            document.getElementById('backup-status').className = 
+                state.device_status.backup === 'ONLINE' 
+                    ? (CONFIG && CONFIG.is_active 
+                        ? 'bg-blue-100 text-blue-800 p-2 rounded text-center' 
+                        : 'bg-green-100 text-green-800 p-2 rounded text-center')
+                    : (state.device_status.backup === 'UNKNOWN'
+                        ? 'bg-gray-100 text-gray-800 p-2 rounded text-center'
+                        : 'bg-red-100 text-red-800 p-2 rounded text-center');
+        }
+        
+        // Connect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            connect();
+        });
+    </script>
+</body>
+</html>

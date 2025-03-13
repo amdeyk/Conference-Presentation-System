@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conference Presentation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col items-center justify-center">
+        <div class="max-w-4xl w-full bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="bg-blue-600 text-white p-6">
+                <h1 class="text-3xl font-bold">Conference Presentation System</h1>
+                <p class="mt-2">A fully redundant, web-enabled presentation management system</p>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center text-gray-600 mb-6">
+                    <p>Select the interface you want to access:</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Moderator Interface -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+                        <div class="p-6 bg-purple-500 text-white">
+                            <h2 class="text-xl font-bold">Moderator Interface</h2>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-gray-600 mb-4">Control presentations, manage timers, and send announcements.</p>
+                            <a href="/moderator" class="block w-full bg-purple-500 text-white py-2 px-4 rounded text-center hover:bg-purple-600 transition-colors">
+                                Access Moderator UI
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Presenter Interface -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+                        <div class="p-6 bg-green-500 text-white">
+                            <h2 class="text-xl font-bold">Presenter Interface</h2>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-gray-600 mb-4">Control slides, view timer, and request more time if needed.</p>
+                            <a href="/presenter" class="block w-full bg-green-500 text-white py-2 px-4 rounded text-center hover:bg-green-600 transition-colors">
+                                Access Presenter UI
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Audience View -->
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow">
+                        <div class="p-6 bg-blue-500 text-white">
+                            <h2 class="text-xl font-bold">Audience View</h2>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-gray-600 mb-4">View the presentation, current speaker info, and announcements.</p>
+                            <a href="/audience" class="block w-full bg-blue-500 text-white py-2 px-4 rounded text-center hover:bg-blue-600 transition-colors">
+                                View Conference
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-4 bg-gray-100 rounded-lg">
+                    <h2 class="text-lg font-bold mb-2">System Status</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-semibold text-sm mb-1">Main System</h3>
+                            <div class="bg-green-100 text-green-800 p-2 rounded-md text-sm flex items-center">
+                                <span class="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                                Online
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-sm mb-1">Backup System</h3>
+                            <div class="bg-gray-100 text-gray-800 p-2 rounded-md text-sm flex items-center">
+                                <span class="inline-block w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+                                Standby
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-100 p-4 border-t">
+                <p class="text-center text-gray-600 text-sm">Conference Presentation System | &copy; 2025</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple script to check system connectivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // This would normally call an API endpoint to get status
+            // For demo purposes it's hardcoded
+            console.log("Index page loaded!");
+        });
+    </script>
+</body>
+</html>
