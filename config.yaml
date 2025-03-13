@@ -1,0 +1,54 @@
+network:
+  mqtt_broker: "localhost"
+  mqtt_port: 1883
+  mqtt_topic_prefix: "conference/"
+  mqtt_username: null
+  mqtt_password: null
+  mqtt_use_tls: false
+  
+  api_host: "0.0.0.0"
+  api_port: 8000
+  api_base_url: null
+  
+  webrtc_enabled: true
+  webrtc_ice_servers: 
+    - urls: "stun:stun.l.google.com:19302"
+  
+device:
+  device_id: null  # Will be auto-generated if null
+  device_role: "MAIN"  # MAIN, BACKUP, or MODERATOR
+  device_name: "Conference System"
+  backup_check_interval: 10  # seconds
+  health_check_interval: 30  # seconds
+  failover_timeout: 15  # seconds
+  powerpoint_enabled: true
+  camera_enabled: false
+  camera_source: null  # Camera index or URL
+  
+ui:
+  theme: "default"
+  logo_path: null
+  logo_position: "top-right"  # top-left, top-right, bottom-left, bottom-right
+  logo_size: 100  # pixels
+  animation_enabled: true
+  custom_css_path: null
+  font_family: "Arial, sans-serif"
+  
+  # UI colors
+  primary_color: "#3B82F6"  # blue
+  secondary_color: "#10B981"  # green
+  background_color: "#F3F4F6"  # light gray
+  text_color: "#1F2937"  # dark gray
+  accent_color: "#F59E0B"  # amber
+  
+security:
+  auth_enabled: true
+  jwt_secret_key: null  # Will be auto-generated if null
+  jwt_algorithm: "HS256"
+  access_token_expire_minutes: 30
+  refresh_token_expire_days: 7
+  password_salt: null  # Will be auto-generated if null
+  allow_anonymous_viewers: true
+  cors_origins: ["*"]
+  
+debug_mode: false

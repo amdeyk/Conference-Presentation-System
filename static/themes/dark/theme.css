@@ -1,0 +1,75 @@
+/**
+ * Dark Theme
+ * Conference Presentation System
+ */
+
+/* Base styles */
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Headers */
+.header {
+    background-color: #1F2937;
+    background-image: linear-gradient(135deg, #1F2937, #111827);
+}
+
+/* Panels */
+.panel {
+    background-color: #1F2937;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Form elements */
+input, textarea, select {
+    background-color: #374151;
+    border-color: #4B5563;
+    color: #F9FAFB;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Buttons */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Status indicators */
+.status-online {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34D399;
+}
+
+.status-standby {
+    background-color: rgba(107, 114, 128, 0.2);
+    color: #D1D5DB;
+}
+
+.status-offline {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #F87171;
+}
+
+/* Timer display */
+.timer-display {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}

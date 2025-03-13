@@ -1,0 +1,14 @@
+{
+    "name": "Default",
+    "description": "Default light theme for Conference Presentation System",
+    "author": "Ambarish Dey",
+    "version": "1.0",
+    "dark_mode": false,
+    "colors": {
+        "primary": "#3B82F6",
+        "secondary": "#10B981",
+        "background": "#F3F4F6",
+        "text": "#1F2937",
+        "accent": "#F59E0B"
+    }
+}

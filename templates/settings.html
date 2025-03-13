@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - Conference Presentation System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="/static/css/base.css" rel="stylesheet">
+    <link href="/static/css/animations.css" rel="stylesheet">
+    <style>
+        .setting-panel {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .color-preview {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #e5e7eb;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-blue-600 text-white shadow">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">System Settings</h1>
+                <a href="/" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded transition-colors">
+                    Back to Home
+                </a>
+            </div>
+        </header>
+        
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-5xl mx-auto">
+                <!-- Alert for saved settings -->
+                {% if saved %}
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 animate-fade-in" role="alert">
+                    <p>Settings saved successfully!</p>
+                </div>
+                {% endif %}
+                
+                <!-- Alert for errors -->
+                {% if error %}
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 animate-fade-in" role="alert">
+                    <p>{{ error }}</p>
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="/settings/save" enctype="multipart/form-data">
+                    <!-- Network Settings -->
+                    <div class="setting-panel">
+                        <div class="setting-header">
+                            <h2 class="text-xl font-bold">Network Settings</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label" for="mqtt_broker">MQTT Broker</label>
+                                <input type="text" id="mqtt_broker" name="mqtt_broker" class="w-full p-2 border rounded" 
+                                    value="{{ config.network.mqtt_broker }}">
+                                <p class="form-hint">Hostname or IP address of MQTT broker</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="mqtt_port">MQTT Port</label>
+                                <input type="number" id="mqtt_port" name="mqtt_port" class="w-full p-2 border rounded" 
+                                    value="{{ config.network.mqtt_port }}">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="mqtt_username">MQTT Username</label>
+                                <input type="text" id="mqtt_username" name="mqtt_username" class="w-full p-2 border rounded" 
+                                    value="{{ config.network.mqtt_username or '' }}">
+                                <p class="form-hint">Optional username for MQTT authentication</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="mqtt_password">MQTT Password</label>
+                                <input type="password" id="mqtt_password" name="mqtt_password" class="w-full p-2 border rounded" 
+                                    value="{{ config.network.mqtt_password or '' }}">
+                                <p class="form-hint">Optional password for MQTT authentication</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="api_host">API Host</label>
+                                <input type="text" id="api_host" name="api_host" class="w-full p-2 border rounded" 
+                                    value="{{ config.network.api_host }}">
+                                <p class="form-hint">Host to bind API server (0.0.0.0 for all interfaces)</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="api_port">API Port</label>
+                                <input type="number" id="api_port" name="api_port" class="w-full p-2 border rounded" 
+                                    value="{{ config.network.api_port }}">
+                            </div>
+                            
+                            <div class="form-group md:col-span-2">
+                                <label class="form-check-label flex items-center">
+                                    <input type="checkbox" id="webrtc_enabled" name="webrtc_enabled" class="mr-2" 
+                                        {% if config.network.webrtc_enabled %}checked{% endif %}>
+                                    Enable WebRTC Screen Sharing
+                                </label>
+                                <p class="form-hint">Enable screen sharing for remote audience</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Device Settings -->
+                    <div class="setting-panel">
+                        <div class="setting-header">
+                            <h2 class="text-xl font-bold">Device Settings</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label" for="device_role">Device Role</label>
+                                <select id="device_role" name="device_role" class="w-full p-2 border rounded">
+                                    <option value="MAIN" {% if config.device.device_role == "MAIN" %}selected{% endif %}>Main System</option>
+                                    <option value="BACKUP" {% if config.device.device_role == "BACKUP" %}selected{% endif %}>Backup System</option>
+                                    <option value="MODERATOR" {% if config.device.device_role == "MODERATOR" %}selected{% endif %}>Moderator</option>
+                                </select>
+                                <p class="form-hint">Role of this device in the conference system</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="device_name">Device Name</label>
+                                <input type="text" id="device_name" name="device_name" class="w-full p-2 border rounded" 
+                                    value="{{ config.device.device_name }}">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="backup_check_interval">Backup Check Interval (seconds)</label>
+                                <input type="number" id="backup_check_interval" name="backup_check_interval" class="w-full p-2 border rounded" 
+                                    value="{{ config.device.backup_check_interval }}">
+                                <p class="form-hint">How often to check the main system status</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="failover_timeout">Failover Timeout (seconds)</label>
+                                <input type="number" id="failover_timeout" name="failover_timeout" class="w-full p-2 border rounded" 
+                                    value="{{ config.device.failover_timeout }}">
+                                <p class="form-hint">Time without heartbeat before failover</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-check-label flex items-center">
+                                    <input type="checkbox" id="powerpoint_enabled" name="powerpoint_enabled" class="mr-2" 
+                                        {% if config.device.powerpoint_enabled %}checked{% endif %}>
+                                    Enable PowerPoint Control
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-check-label flex items-center">
+                                    <input type="checkbox" id="camera_enabled" name="camera_enabled" class="mr-2" 
+                                        {% if config.device.camera_enabled %}checked{% endif %}>
+                                    Enable Camera
+                                </label>
+                            </div>
+                            
+                            <div class="form-group md:col-span-2">
+                                <label class="form-label" for="camera_source">Camera Source</label>
+                                <input type="text" id="camera_source" name="camera_source" class="w-full p-2 border rounded" 
+                                    value="{{ config.device.camera_source or '' }}" placeholder="Camera index (e.g., 0) or URL">
+                                <p class="form-hint">Camera index or URL (leave empty to use default camera)</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- UI Settings -->
+                    <div class="setting-panel">
+                        <div class="setting-header">
+                            <h2 class="text-xl font-bold">UI Settings</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label" for="theme">Theme</label>
+                                <select id="theme" name="theme" class="w-full p-2 border rounded">
+                                    {% for theme in themes %}
+                                    <option value="{{ theme.id }}" {% if theme.id == config.ui.theme %}selected{% endif %}>
+                                        {{ theme.name }}{% if theme.dark_mode %} (Dark){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="logo_file">Conference Logo</label>
+                                <input type="file" id="logo_file" name="logo_file" class="w-full p-2 border rounded" accept="image/*">
+                                <p class="form-hint">Upload a new logo image (PNG, JPG, or SVG)</p>
+                                
+                                {% if config.ui.logo_path %}
+                                <div class="mt-2 flex items-center">
+                                    <img src="/static/logos/{{ config.ui.logo_path|basename }}" alt="Current Logo" class="h-8 mr-2">
+                                    <span class="text-sm text-gray-600">Current logo</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="logo_position">Logo Position</label>
+                                <select id="logo_position" name="logo_position" class="w-full p-2 border rounded">
+                                    <option value="top-left" {% if config.ui.logo_position == "top-left" %}selected{% endif %}>Top Left</option>
+                                    <option value="top-right" {% if config.ui.logo_position == "top-right" %}selected{% endif %}>Top Right</option>
+                                    <option value="bottom-left" {% if config.ui.logo_position == "bottom-left" %}selected{% endif %}>Bottom Left</option>
+                                    <option value="bottom-right" {% if config.ui.logo_position == "bottom-right" %}selected{% endif %}>Bottom Right</option>
+                                    <option value="custom" {% if config.ui.logo_position == "custom" %}selected{% endif %}>Custom</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="logo_size">Logo Size (pixels)</label>
+                                <input type="number" id="logo_size" name="logo_size" class="w-full p-2 border rounded" 
+                                    value="{{ config.ui.logo_size }}">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="primary_color">Primary Color</label>
+                                <div class="flex items-center">
+                                    <span class="color-preview" style="background-color: {{ config.ui.primary_color }};"></span>
+                                    <input type="text" id="primary_color" name="primary_color" class="w-full p-2 border rounded" 
+                                        value="{{ config.ui.primary_color }}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="secondary_color">Secondary Color</label>
+                                <div class="flex items-center">
+                                    <span class="color-preview" style="background-color: {{ config.ui.secondary_color }};"></span>
+                                    <input type="text" id="secondary_color" name="secondary_color" class="w-full p-2 border rounded" 
+                                        value="{{ config.ui.secondary_color }}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="accent_color">Accent Color</label>
+                                <div class="flex items-center">
+                                    <span class="color-preview" style="background-color: {{ config.ui.accent_color }};"></span>
+                                    <input type="text" id="accent_color" name="accent_color" class="w-full p-2 border rounded" 
+                                        value="{{ config.ui.accent_color }}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-check-label flex items-center">
+                                    <input type="checkbox" id="animation_enabled" name="animation_enabled" class="mr-2" 
+                                        {% if config.ui.animation_enabled %}checked{% endif %}>
+                                    Enable UI Animations
+                                </label>
+                                <p class="form-hint">Enable transitions and animations in the UI</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Security Settings -->
+                    <div class="setting-panel">
+                        <div class="setting-header">
+                            <h2 class="text-xl font-bold">Security Settings</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-check-label flex items-center">
+                                    <input type="checkbox" id="auth_enabled" name="auth_enabled" class="mr-2" 
+                                        {% if config.security.auth_enabled %}checked{% endif %}>
+                                    Enable Authentication
+                                </label>
+                                <p class="form-hint">Require authentication for access to the system</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-check-label flex items-center">
+                                    <input type="checkbox" id="allow_anonymous_viewers" name="allow_anonymous_viewers" class="mr-2" 
+                                        {% if config.security.allow_anonymous_viewers %}checked{% endif %}>
+                                    Allow Anonymous Viewers
+                                </label>
+                                <p class="form-hint">Allow access to audience view without authentication</p>
+                            </div>
+                            
+                            <div class="form-group md:col-span-2">
+                                <label class="form-label" for="cors_origins">CORS Origins</label>
+                                <input type="text" id="cors_origins" name="cors_origins" class="w-full p-2 border rounded" 
+                                    value="{{ config.security.cors_origins|join(', ') }}">
+                                <p class="form-hint">Comma-separated list of allowed origins (* for all)</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit buttons -->
+                    <div class="flex justify-end space-x-4 mt-6">
+                        <button type="reset" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                            Reset
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+        
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4">
+                <p class="text-center">Conference Presentation System by Ambarish Dey</p>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="/static/js/main.js"></script>
+    <script>
+        // Preview color when input changes
+        document.querySelectorAll('input[type="text"][id$="_color"]').forEach(input => {
+            input.addEventListener('input', function() {
+                const preview = this.parentElement.querySelector('.color-preview');
+                preview.style.backgroundColor = this.value;
+            });
+        });
+    </script>
+</body>
+</html>

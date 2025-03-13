@@ -1,0 +1,54 @@
+/**
+ * Default Theme
+ * Conference Presentation System
+ */
+
+/* Base styles */
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Headers */
+.header {
+    background-color: var(--primary-color);
+    background-image: linear-gradient(135deg, var(--primary-color), var(--primary-color) 60%, var(--secondary-color));
+}
+
+/* Panels */
+.panel {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Timer display */
+.timer-display {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Status indicators */
+.status-online, .status-standby, .status-offline {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+}

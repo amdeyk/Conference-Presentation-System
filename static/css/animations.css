@@ -1,0 +1,149 @@
+/* Animation styles for Conference Presentation System */
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Transition classes */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.transition-colors {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+/* Hover effects */
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-bright:hover {
+  filter: brightness(1.1);
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Loading spinner */
+.loader {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: var(--primary-color);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+/* Announcement animation */
+.announcement-enter {
+  max-height: 0;
+  opacity: 0;
+}
+
+.announcement-enter-active {
+  max-height: 200px;
+  opacity: 1;
+  transition: max-height 500ms ease-in, opacity 400ms ease-in 100ms;
+}
+
+.announcement-exit {
+  max-height: 200px;
+  opacity: 1;
+}
+
+.announcement-exit-active {
+  max-height: 0;
+  opacity: 0;
+  transition: opacity 300ms ease-out, max-height 500ms ease-out 100ms;
+}
+
+/* Timer flashing for last 10 seconds */
+@keyframes timerFlash {
+  0% { color: #EF4444; }
+  50% { color: #FEF2F2; }
+  100% { color: #EF4444; }
+}
+
+.timer-flashing {
+  animation: timerFlash 1s infinite;
+}

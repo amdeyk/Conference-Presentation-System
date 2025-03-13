@@ -1,0 +1,14 @@
+{
+    "name": "Dark Mode",
+    "description": "Dark theme for Conference Presentation System",
+    "author": "Ambarish Dey",
+    "version": "1.0",
+    "dark_mode": true,
+    "colors": {
+        "primary": "#3B82F6",
+        "secondary": "#10B981",
+        "background": "#111827",
+        "text": "#F9FAFB",
+        "accent": "#F59E0B"
+    }
+}
